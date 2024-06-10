@@ -18,6 +18,7 @@ from matplotlib.lines import Line2D
 plt.style.use('seaborn-whitegrid')
 import ctypes
 import sys
+import time
 
 #%% Main controls for Part A and B
 #Set the experimental parameters here
@@ -27,9 +28,13 @@ import sys
 #to decrease the experimentsize. But this is at your own risk!
 #you still need to obtain statistically significant results
 
+# calculate the running time
+starttime = time.time()
+
+# Define parameters
 ADPiterations = 250 #Number of ADP iterations (N)
 CheckMthIter = 10 #Simulate every Mth iteration (M)
-Simiterations = 1000 #Number of simulation iterations (O)
+Simiterations = 10#00 #Number of simulation iterations (O)
 ADPreplications = 1 #Number of replications (K)
 
 TimeHorizon = 20 #Horizon for finite ADP (T)
@@ -104,3 +109,8 @@ plt.ylabel("Estimated value of post-decision state 1")
 labels = ['ADP setting #1']#add labels if you want to plot multiple runs
 legend_elements = [Line2D([0], [0], color=color_list[i], lw=4, label=labels[i]) for i in range(0,len(labels))] 
 plt.legend(title = r"$\bf{Settings}$", handles = legend_elements, bbox_to_anchor=(1.4, 1))
+
+# calculate and print the running time
+endtime = time.time()
+running_time = endtime - starttime
+print("The running time is:", running_time)
