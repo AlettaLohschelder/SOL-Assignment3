@@ -1,0 +1,26 @@
+APPROXIMATE DYNAMIC PROGRAMMING (ADP) SOL PYTHON STARTING MODEL
+
+This folder contains all the necessary files for the starting model of the ADP assignment.
+To open and edit the files you need a Python IDE, like Spyder or PyCharm. 
+You need Python 3.7 or higher to run the code.
+There are already some procedures and functions stated which can help you with this assignment. See the comments in the code for a full explanation.
+Please note that the already defined procedures may need to be adapted, so it is certainly necessary to understand the code before you start programming yourself.
+The code for both Part A and Part B is only an example implementation, there are many different ways to model optimal learning policies and
+Approximate Dynamic Programming. Even the ADP approach in Mes & Rivera (2017) allows for many modeling choices.
+
+The Python project is divided into two separate files:
+ *MainUnit
+ *PartAAndB
+
+MainUnit:
+This is the file in which all controls are stated. You control parameters and run experiments from this file.
+
+PartAAndB:
+In this file, the starting model for Part A (Approximate Dynamic Programming) and Part B (ADP with Value Function Approximation) is stated.
+It is your task to finish the code for the following procedures:
+ *FiniteADP
+ *InfiniteADP
+ *DoublePassFiniteADP
+
+Inside these three procedures, there is a part reserved for Part B of the assignment (Value Function Approximation) which concerns generalization across states.
+This is indicated in the comments.
