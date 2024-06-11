@@ -15,6 +15,7 @@ import numpy as np
 
 #Define Global variables
 AreaSize = 16 #area = 16x16
+FixedStepSizeAlpha = 0.05
 #The load probability, day factor and trailer factor vectors.
 LoadProbability = np.zeros((AreaSize*AreaSize))#We fill this array later, since we first need to define a function
 DayFactor = np.array([1,0.8,0.6,0.7,0.9,0.2,0.1])
@@ -174,7 +175,7 @@ def InfiniteEvaluationSimulation(Simiterations, MultiAttribute):
 
 def InfiniteADP(MultiAttribute, fixedStepSize,
                 generalization, ADPiterations, CheckMthIter, Simiterations, Replications,
-                samplingStrategy):
+                samplingStrategy, gamma):
     global PostDecisionStateValue
     
     #Initialize results array
@@ -185,16 +186,16 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
     
     for k in range(0,Replications):
     
-        #Initialize the post-decision state estimates
+        #Initialize the post-decision state estimates  = STEP 0
         if MultiAttribute == True:
             PostDecisionStateValue = np.zeros(((AreaSize*AreaSize),7,3,1))
         else:
             PostDecisionStateValue = np.zeros(((AreaSize*AreaSize),1,1,1))
         
-        #Perform an initial myopic evaluation simulation before the ADP starts
+        #Perform an initial myopic evaluation simulation before the ADP starts  = STEP 0
         DiscountedRewards[0] += InfiniteEvaluationSimulation(Simiterations,MultiAttribute)
         
-        #Set the initial state
+        #Set the initial state = STEP 0
         location = 0
         day = 0
         trailer = 0
@@ -206,19 +207,26 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
             """Add code to find the best decision and corresponding value, given 
             the current state and estimates"""
             
+            
             #Update the previous post-decision state's estimate
             if generalization == True:
-                """PART C: Add code to update the post-decision estimates using 
+                """PART C (= B): Add code to update the post-decision estimates using 
                 some form of generalization across states"""
             
             #Update the estimates without generalization across states
             else:
                 if fixedStepSize == True:
                     """Add code to update the post-decision state estimates using a fixed stepsize"""
+                    # we use a fixed step size
+
+                    
+                     #FixedStepSizeAlpha
                 else:
+                    # We use harmonic stepsize
                     """Add code to update the post-decision state estimates using another stepsize"""
+                     #True = fixed stepsize alpha = 0.05, False = different stepsize
             
-            #Find the next post-decision state and next full state
+            #Find the next post-decision state and next full state = STEP 1
             if samplingStrategy[0] == 1:
                 """Add code to find the next state using a pure exploitation sampling policy.
                 Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
@@ -243,10 +251,10 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
 
 def FiniteADP(MultiAttribute, fixedStepSize,
               generalization, ADPiterations, CheckMthIter, Simiterations,
-              Replications, TimeHorizon, samplingStrategy):
+              Replications, TimeHorizon, samplingStrategy,gamma):
     global PostDecisionStateValue
     
-    #Initialize results array
+    #Initialize results array = STEP 0
     DiscountedRewards = np.zeros((ceil(ADPiterations/CheckMthIter))+1)
     EstimateInitialStates = np.zeros((ceil(ADPiterations/CheckMthIter))+1)
     
@@ -254,7 +262,7 @@ def FiniteADP(MultiAttribute, fixedStepSize,
     
     for k in range(0,Replications):
     
-        #Initialize the post-decision state estimates
+        #Initialize the post-decision state estimates 
         if MultiAttribute == True:
             PostDecisionStateValue = np.zeros(((AreaSize*AreaSize),7,3,20))
         else:
@@ -272,40 +280,63 @@ def FiniteADP(MultiAttribute, fixedStepSize,
             demand = np.zeros((AreaSize*AreaSize))
             demand = GenerateDemandVector(location, day, demand)
             
-            for t in range(0,TimeHorizon+1):
-                    """Add code to find the best decision and corresponding value, 
-                    given the current state and estimates"""
+            # loop through the time blocks
+            for t in range(0,TimeHorizon+1): 
+                    # STEP 2.1
+                    """Add code to find the best decision and corresponding value, given the current state and estimates"""
+                    bestDecision, DecisionmaxValue = FindBestDecisionAndValue(location, day, trailer, t, TimeHorizon, gamma, demand, MultiAttribute)
                     
-                    #Update the previous post-decision state's estimate
+                    #Update the previous post-decision state's estimate 
+                    # STEP 2.2
                     if t > 0:
-                        if generalization == True:
-                            
-                            """PART C: Add code to update the post-decision estimates 
+                        if generalization == True: 
+                            """PART C (=B): Add code to update the post-decision estimates 
                             using some form of generalization across states"""
+
+
                         else:
-                            #Update using a fixed stepsize
                             if fixedStepSize == True:
-                                """Add code to update the post-decision state estimates 
-                                using a fixed stepsize"""
+                                """Add code to update the post-decision state estimates using a fixed stepsize"""
+                                # Determine the step size
+                                if n == 1:
+                                    # For n=1 we always update completely, so step size = 1
+                                    StepSize = 1
+                                else: 
+                                    # Use the fixed step size
+                                    StepSize = FixedStepSizeAlpha
+                                # Update PostDecisionStateValue using a fixed stepsize
+                                # PostDecisionStateValue[bestDecision,t] = (1-StepSize)*PreviousValue*State + StepSize* ????
+
                             
-                            #Update usinga harmonic stepsize
                             else:
-                                """Add code to update the post-decision state estimates 
-                                using another stepsize"""
+                                """Add code to update the post-decision state estimates using another stepsize"""
+                                # Calculate the harmonic stepsize
+                                if n == 1:
+                                    # For n=1 we always update completely, so step size = 1
+                                    StepSize = 1
+                                else: 
+                                    StepSize = max(25/(25+n-1),gamma)
+                                # Update using a harmonic stepsize
+
                     
                     #Find the next post-decision state and next full state
+                    # STEP 2.3
                     if samplingStrategy[0] == 1:
                         """Add code to find the next state using a pure exploitation sampling policy.
                         Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+
                     elif samplingStrategy[1] == 1:
                         """Add code to find the next state using a pure exploration sampling policy.
                         Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+
                     elif samplingStrategy[2] == 1:
                         """Add code to find the next state using a sampling policy of your own choice."""
+                        # Epsilon-Greedy Policy
                     
                     if MultiAttribute == True:
-                        """Add code to take consider the multi-attribute problem with loadprobabilities and trailer types"""
-                
+                        """Add code to take consider the multi-attribute problem with load probabilities and trailer types"""
+
+            # STEP 4    
             #After every M iterations, evaluate the current policy
             if n % CheckMthIter == 0:
                 DiscountedRewards[ceil(n/CheckMthIter)] +=  FiniteEvaluationSimulation(Simiterations,TimeHorizon,MultiAttribute)
@@ -318,7 +349,7 @@ def FiniteADP(MultiAttribute, fixedStepSize,
 
 def DoublePassFiniteADP(MultiAttribute, fixedStepSize,
                         generalization, ADPiterations, CheckMthIter, Simiterations,
-                        Replications, TimeHorizon, samplingStrategy):
+                        Replications, TimeHorizon, samplingStrategy,gamma):
     global PostDecisionStateValue
     
     #Initialize results array

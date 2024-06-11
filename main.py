@@ -47,25 +47,29 @@ samplingStrategy = [1,0,0] #1 = Expoit, 2=Explore, 3=Other sampling strategy
 doublePass = False #True = double pass, False = forward pass
 
 """PART B:"""
-generalization = False #True = generalization across states, False = no generalizaton
+generalization = False #True = generalization across states, False = no generalizaton. (whether you update all states (generalization) or not, when you update one value)
 """END PART B"""
 
 if infiniteADP == False:
+    # set the gamma value for the infinite problem
+    gamma = 2
     #Run either the forward pass or double pass ADP algorithm for the finite horizon case
     if doublePass == False:
         ResultsADP,EstimateInitialState = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
                                       ADPiterations,CheckMthIter,Simiterations,
-                                      ADPreplications,TimeHorizon,samplingStrategy)
+                                      ADPreplications,TimeHorizon,samplingStrategy,gamma)
     else:
         ResultsADP,EstimateInitialStat = PartAB.DoublePassFiniteADP(MultiAttribute,fixedStepSize,generalization,
                                                 ADPiterations,CheckMthIter,Simiterations,
-                                                ADPreplications,TimeHorizon,samplingStrategy)
+                                                ADPreplications,TimeHorizon,samplingStrategy,gamma)
 
 #Run the ADP for the infinite horizon case with the chosen settings
 elif infiniteADP == True:
+    # set the gamma value for the infinite problem 
+    gamma = 0.9
     ResultsADP,EstimateInitialState = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
                                                 ADPiterations,CheckMthIter,Simiterations,
-                                                ADPreplications,samplingStrategy)
+                                                ADPreplications,samplingStrategy,gamma)
 
 
 
