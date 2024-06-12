@@ -202,11 +202,14 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
         trailer = 0
         demand = np.zeros((AreaSize*AreaSize))
         demand = GenerateDemandVector(location, day, demand)
+        C = 0.95 # parameter for Epsilon-Greedy policy
         
         #Loop over all iterations
         for n in range(1,ADPiterations+1):
             """Add code to find the best decision and corresponding value, given the current state and estimates"""
-            bestDecision, DecisionmaxValue = FindBestDecisionAndValue(location, day, trailer, t, TimeHorizon, gamma, demand, MultiAttribute)           
+            # STEP 2.1
+            # We use timehorizon = 0 and t = 0 since it is an infinite problem
+            bestDecision, DecisionmaxValue = FindBestDecisionAndValue(location, day, trailer, 0, 0, gamma, demand, MultiAttribute)           
             
             #Update the previous post-decision state's estimate
             if generalization == True:
@@ -217,25 +220,47 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
             else:
                 if fixedStepSize == True:
                     """Add code to update the post-decision state estimates using a fixed stepsize"""
-                    # we use a fixed step size
-
-                    
-                     #FixedStepSizeAlpha
+                    # Determine the step size
+                    if n == 1:
+                        # For n=1 we always update completely, so step size = 1
+                        StepSize = 1
+                    else: 
+                        # Use the fixed step size
+                        StepSize = FixedStepSizeAlpha
+                    # Update PostDecisionStateValue using a fixed stepsize
+                    PostDecisionStateValue[location,day,trailer,0] = (1-StepSize)*PostDecisionStateValue[location,day,trailer,0] + StepSize*DecisionmaxValue
                 else:
-                    # We use harmonic stepsize
-                    """Add code to update the post-decision state estimates using another stepsize"""
-                     #True = fixed stepsize alpha = 0.05, False = different stepsize
-            
+                    """Add code to update the post-decision state estimates using a harmonic stepsize"""
+                    # Calculate the harmonic stepsize
+                    if n == 1:
+                        # For n=1 we always update completely, so step size = 1
+                        StepSize = 1
+                    else: 
+                        StepSize = max(25/(25+n-1),gamma)
+                    # Update using a harmonic stepsize
+                    PostDecisionStateValue[location,day,trailer,0] = (1-StepSize)*PostDecisionStateValue[location,day,trailer,0] + StepSize*DecisionmaxValue
+
             #Find the next post-decision state and next full state = STEP 1
             if samplingStrategy[0] == 1:
-                """Add code to find the next state using a pure exploitation sampling policy.
-                Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+                """Add code to find the next state using a pure exploitation sampling policy."""
+                location = bestDecision
+                demand = GenerateDemandVector(location, day, demand) 
+
             elif samplingStrategy[1] == 1:
-                """Add code to find the next state using a pure exploration sampling policy.
-                Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+                """Add code to find the next state using a pure exploration sampling policy."""
+                location = np.random.randint(0,256)  #not including 256, so 0 up until 255
+                demand = GenerateDemandVector(location, day, demand)
+
             elif samplingStrategy[2] == 1:
                 """Add code to find the next state using a sampling policy of your own choice."""
-                
+                Epsilon = C/(n+1)
+                if np.random.random() <= Epsilon: # Exploration (random)
+                    location = np.random.randint(0,256)  #not including 256, so 0 up until 255
+                    demand = GenerateDemandVector(location, day, demand)
+                else: # Exploitation (best location)
+                    location = bestDecision
+                    demand = GenerateDemandVector(location, day, demand) 
+                    
             if MultiAttribute == True:
                         """Add code to take consider the multi-attribute problem with loadprobabilities and trailer types"""
                 
@@ -325,14 +350,12 @@ def FiniteADP(MultiAttribute, fixedStepSize,
                     if samplingStrategy[0] == 1: # Exploit = use the best location so far
                         location = bestDecision
                         demand = GenerateDemandVector(location, day, demand) 
-                        """Add code to find the next state using a pure exploitation sampling policy.
-                        Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+                        """Add code to find the next state using a pure exploitation sampling policy."""
 
                     elif samplingStrategy[1] == 1: # Explore = random
                         location = np.random.randint(0,256)  #not including 256, so 0 up until 255
                         demand = GenerateDemandVector(location, day, demand)
-                        """Add code to find the next state using a pure exploration sampling policy.
-                        Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
+                        """Add code to find the next state using a pure exploration sampling policy."""
 
                     elif samplingStrategy[2] == 1: #Epsilon-Greedy with 0.95 initial exploration
                         """Add code to find the next state using a sampling policy of your own choice."""
@@ -383,6 +406,7 @@ def DoublePassFiniteADP(MultiAttribute, fixedStepSize,
         #Loop over all iterations
         for n in range(1,ADPiterations+1):
             #Set the initial state
+            C = 0.95 # parameter for epsilon-greedy
             location = 0
             day = 0
             trailer = 0
@@ -392,17 +416,30 @@ def DoublePassFiniteADP(MultiAttribute, fixedStepSize,
             for t in range(0,TimeHorizon+1):
                 """Add code to find the best decision and corresponding value, 
                 given the current state and estimates"""
+                bestDecision, DecisionmaxValue = FindBestDecisionAndValue(location, day, trailer, t, TimeHorizon, gamma, demand, MultiAttribute)
                     
-                   #Find the next post-decision state and next full state
-                if samplingStrategy[0] == 1:
-                       """Add code to find the next state using a pure exploitation sampling policy.
-                       Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
-                elif samplingStrategy[1] == 1:
-                       """Add code to find the next state using a pure exploration sampling policy.
-                       Hint: Use the GenerateDemandVector procedure to generate the demand for the next state"""
-                elif samplingStrategy[2] == 1:
-                       """Add code to find the next state using a sampling policy of your own choice."""
-            
+                #Find the next post-decision state and next full state
+                # STEP 2.3
+                if samplingStrategy[0] == 1: # Exploit = use the best location so far
+                    location = bestDecision
+                    demand = GenerateDemandVector(location, day, demand) 
+                    """Add code to find the next state using a pure exploitation sampling policy."""
+
+                elif samplingStrategy[1] == 1: # Explore = random
+                    """Add code to find the next state using a pure exploration sampling policy."""
+                    location = np.random.randint(0,256)  #not including 256, so 0 up until 255
+                    demand = GenerateDemandVector(location, day, demand)
+                        
+                elif samplingStrategy[2] == 1: #Epsilon-Greedy with 0.95 initial exploration
+                    """Add code to find the next state using a sampling policy of your own choice."""
+                    Epsilon = C/(n+1)
+                    if np.random.random() <= Epsilon: # Exploration (random)
+                        location = np.random.randint(0,256)  #not including 256, so 0 up until 255
+                        demand = GenerateDemandVector(location, day, demand)
+                    else: # Exploitation (best location)
+                        location = bestDecision
+                        demand = GenerateDemandVector(location, day, demand) 
+                        
                 if MultiAttribute == True:
                         """Add code to take consider the multi-attribute problem with loadprobabilities and trailer types"""
                 
@@ -416,7 +453,7 @@ def DoublePassFiniteADP(MultiAttribute, fixedStepSize,
                 
                 #Update the post-decision state estimates
                 if generalization == True:
-                    """PART C: Add code to update the post-decision estimates using 
+                    """PART C(= B): Add code to update the post-decision estimates using 
                     some form of generalization across states"""
                 else:
                     #Update using a fixed stepsize

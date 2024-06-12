@@ -34,16 +34,16 @@ starttime = time.time()
 # Define parameters
 ADPiterations = 250 #Number of ADP iterations (N)
 CheckMthIter = 10 #Simulate every Mth iteration (M)
-Simiterations = 10 #1000 #Number of simulation iterations (O)
+Simiterations = 1000 #Number of simulation iterations (O)
 ADPreplications = 1 #Number of replications (K)
 
 TimeHorizon = 20 #Horizon for finite ADP (T)
 
 infiniteADP = False #True = infinite ADP, False = finite ADP
-fixedStepSize = False #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
+fixedStepSize = False  #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
 MultiAttribute = False #True = Multi attribute, False = single attribute
-samplingStrategy = [0,0,1] #1 = Exploit, 2=Explore, 3=Epsilon-Greedy
-#Turn the sampling strategy on by changing the location of the '1'
+# we plot all 3 policies in the same figure, so commented the following line out 
+# samplingStrategy = [0,1,0] #1 = Exploit, 2=Explore, 3=Epsilon-Greedy --- Turn the sampling strategy on by changing the location of the '1'
 doublePass = False #True = double pass, False = forward pass
 
 """PART B:"""
@@ -55,11 +55,35 @@ if infiniteADP == False:
     gamma = 1 
     #Run either the forward pass or double pass ADP algorithm for the finite horizon case
     if doublePass == False:
-        ResultsADP,EstimateInitialState = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
+        # Run policy 1
+        samplingStrategy = [1,0,0]
+        ResultsADP1,EstimateInitialState1 = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
                                       ADPiterations,CheckMthIter,Simiterations,
                                       ADPreplications,TimeHorizon,samplingStrategy,gamma)
+        # Run policy 2
+        samplingStrategy = [0,1,0]
+        ResultsADP2,EstimateInitialState2 = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                      ADPiterations,CheckMthIter,Simiterations,
+                                      ADPreplications,TimeHorizon,samplingStrategy,gamma)
+        # Run policy 3
+        samplingStrategy = [0,1,0]
+        ResultsADP3,EstimateInitialState3 = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                ADPiterations,CheckMthIter,Simiterations,
+                                ADPreplications,TimeHorizon,samplingStrategy,gamma)
     else:
-        ResultsADP,EstimateInitialStat = PartAB.DoublePassFiniteADP(MultiAttribute,fixedStepSize,generalization,
+        # Run policy 1
+        samplingStrategy = [1,0,0]
+        ResultsADP1,EstimateInitialState1 = PartAB.DoublePassFiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                                ADPiterations,CheckMthIter,Simiterations,
+                                                ADPreplications,TimeHorizon,samplingStrategy,gamma)
+        # Run policy 2
+        samplingStrategy = [0,1,0]
+        ResultsADP2,EstimateInitialState2 = PartAB.DoublePassFiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                                ADPiterations,CheckMthIter,Simiterations,
+                                                ADPreplications,TimeHorizon,samplingStrategy,gamma)
+        # Run policy 3
+        samplingStrategy = [0,0,1]
+        ResultsADP3,EstimateInitialState3 = PartAB.DoublePassFiniteADP(MultiAttribute,fixedStepSize,generalization,
                                                 ADPiterations,CheckMthIter,Simiterations,
                                                 ADPreplications,TimeHorizon,samplingStrategy,gamma)
 
@@ -67,52 +91,100 @@ if infiniteADP == False:
 elif infiniteADP == True:
     # set the gamma value for the infinite problem 
     gamma = 0.9
-    ResultsADP,EstimateInitialState = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
+    # Run policy 1
+    samplingStrategy = [1,0,0]
+    ResultsADP1,EstimateInitialState1 = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
                                                 ADPiterations,CheckMthIter,Simiterations,
                                                 ADPreplications,samplingStrategy,gamma)
-
+    # Run policy 2
+    samplingStrategy = [0,1,0]
+    ResultsADP2,EstimateInitialState2 = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                                ADPiterations,CheckMthIter,Simiterations,
+                                                ADPreplications,samplingStrategy,gamma)
+    # Run policy 3
+    samplingStrategy = [0,0,1]
+    ResultsADP3,EstimateInitialState3 = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
+                                                ADPiterations,CheckMthIter,Simiterations,
+                                                ADPreplications,samplingStrategy,gamma)
 
 
 #Plot result, you may change the plot style if you want
 #It may be required to plot multiple ADP runs with different settings in a single figure
 #In that case you need to store the 'ResultsADP' array and plot all stored arrays at once
 #by adapting the below code. Remember to update the legend in that case
-color_list = ['red','yellow','green','cyan','plum','purple']
+color_list = ['lightblue','plum','orange','red','purple','green']
 fig2 = plt.figure()
 ax2 = plt.axes()
 x = []
-for i in range(0,len(ResultsADP)):
+y = []
+z = []
+for i in range(0,len(ResultsADP1)):
     x.append(i*CheckMthIter)
-ax2.plot(x,ResultsADP/ADPreplications, color = color_list[0])    
+for i in range(0,len(ResultsADP2)):
+    y.append(i*CheckMthIter)
+for i in range(0,len(ResultsADP3)):
+    z.append(i*CheckMthIter)
+ax2.plot(x,ResultsADP1/ADPreplications, color = color_list[0])      # policy 1 
+ax2.plot(y,ResultsADP2/ADPreplications, color = color_list[1])      # policy 2 
+ax2.plot(z,ResultsADP3/ADPreplications, color = color_list[2])      # policy 3 
 plt.xlim(0, ADPiterations) 
-if infiniteADP == False:
-    plt.title("Finite Horizon: average rewards after n ADP iterations")
+# Print the correct plot title 
+if infiniteADP == False and fixedStepSize == False:
+    plt.title("Finite Horizon, harmonic stepsize: average rewards after n ADP iterations")
+elif infiniteADP == False and fixedStepSize == True:
+    plt.title("Finite Horizon, fixed stepsize: average rewards after n ADP iterations")
+elif infiniteADP == True and fixedStepSize == False:
+    plt.title("Infinite Horizon, harmonic stepsize: average rewards after n ADP iterations")
+elif infiniteADP == True and fixedStepSize == True:
+    plt.title("Infinite Horizon, fixed stepsize: average rewards after n ADP iterations")
 else:
-    plt.title("Infinite Horizon: average rewards after n ADP iterations")
+    print("Error: you did not get a plot title.")  # you should not get stuck into this loop  
+
 plt.xlabel("ADP iterations")
 plt.ylabel("Average discounted rewards")
-labels = ['ADP setting #1'] #add labels if you want to plot multiple runs
+labels = ['Exploitation policy','Exploration policy','Epsilon-Greedy policy'] #labels for the policies
 legend_elements = [Line2D([0], [0], color=color_list[i], lw=4, label=labels[i]) for i in range(0,len(labels))] 
-plt.legend(title = r"$\bf{Settings}$", handles = legend_elements, bbox_to_anchor=(1.4, 1))
+plt.legend(title=r"$\bf{Legend}$", handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()  # Adjust layout to make room for the legend
 plt.show()
 
-#Maybe add as subplot to previous plot if you want
+# Maybe add as subplot to previous plot if you want
 fig3 = plt.figure()
 ax3 = plt.axes()
 x = []
-for i in range(0,len(EstimateInitialState)):
+y = []
+z = []
+for i in range(0,len(EstimateInitialState1)):
     x.append(i*CheckMthIter)
-ax3.plot(x,EstimateInitialState/ADPreplications, color = color_list[0])    
+for i in range(0,len(EstimateInitialState2)):
+    y.append(i*CheckMthIter)
+for i in range(0,len(EstimateInitialState3)):
+    z.append(i*CheckMthIter)
+ax3.plot(x,EstimateInitialState1/ADPreplications, color = color_list[0])    
+ax3.plot(x,EstimateInitialState2/ADPreplications, color = color_list[1])   
+ax3.plot(x,EstimateInitialState3/ADPreplications, color = color_list[2])   
 plt.xlim(0, ADPiterations) 
-if infiniteADP == False:
-    plt.title("Finite Horizon: Progression of initial state")
+
+# Print the correct plot title 
+if infiniteADP == False and fixedStepSize == False:
+    plt.title("Finite Horizon, harmonic stepsize: Progression of initial state")
+elif infiniteADP == False and fixedStepSize == True:
+    plt.title("Finite Horizon, fixed stepsize: Progression of initial state")
+elif infiniteADP == True and fixedStepSize == False:
+    plt.title("Infinite Horizon, harmonic stepsize: Progression of initial state")
+elif infiniteADP == True and fixedStepSize == True:
+    plt.title("Infinite Horizon, fixed stepsize: Progression of initial state")
 else:
-    plt.title("Infinite Horizon: Progression of initial state")
+    print("Error: you did not get a plot title.")  # you should not get stuck into this part of the  loop  
+
 plt.xlabel("ADP iterations")
 plt.ylabel("Estimated value of post-decision state 1")
-labels = ['ADP setting #1']#add labels if you want to plot multiple runs
+labels = ['Exploitation policy','Exploration policy','Epsilon-Greedy policy'] #labels for the policies
 legend_elements = [Line2D([0], [0], color=color_list[i], lw=4, label=labels[i]) for i in range(0,len(labels))] 
-plt.legend(title = r"$\bf{Settings}$", handles = legend_elements, bbox_to_anchor=(1.4, 1))
+# plt.legend(title = r"$\bf{Legend}$", handles = legend_elements, bbox_to_anchor=(1.4, 1))
+plt.legend(title=r"$\bf{Legend}$", handles=legend_elements, bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.tight_layout()  # Adjust layout to make room for the legend
+plt.show()
 
 # calculate and print the running time
 endtime = time.time()
