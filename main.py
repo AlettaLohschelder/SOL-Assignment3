@@ -15,7 +15,7 @@ Note: Only an example implementation, you are allowed to make changes to all cod
 import PartAandB as PartAB
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
-plt.style.use('seaborn-whitegrid')
+# plt.style.use('seaborn-whitegrid')
 import ctypes
 import sys
 import time
@@ -34,15 +34,15 @@ starttime = time.time()
 # Define parameters
 ADPiterations = 250 #Number of ADP iterations (N)
 CheckMthIter = 10 #Simulate every Mth iteration (M)
-Simiterations = 10#00 #Number of simulation iterations (O)
+Simiterations = 10 #1000 #Number of simulation iterations (O)
 ADPreplications = 1 #Number of replications (K)
 
 TimeHorizon = 20 #Horizon for finite ADP (T)
 
 infiniteADP = False #True = infinite ADP, False = finite ADP
-fixedStepSize = True #True = fixed stepsize alpha = 0.05, False = different stepsize
+fixedStepSize = False #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
 MultiAttribute = False #True = Multi attribute, False = single attribute
-samplingStrategy = [1,0,0] #1 = Expoit, 2=Explore, 3=Other sampling strategy
+samplingStrategy = [0,0,1] #1 = Exploit, 2=Explore, 3=Epsilon-Greedy
 #Turn the sampling strategy on by changing the location of the '1'
 doublePass = False #True = double pass, False = forward pass
 
@@ -51,8 +51,8 @@ generalization = False #True = generalization across states, False = no generali
 """END PART B"""
 
 if infiniteADP == False:
-    # set the gamma value for the infinite problem
-    gamma = 2
+    # set the gamma value for the finite problem
+    gamma = 1 
     #Run either the forward pass or double pass ADP algorithm for the finite horizon case
     if doublePass == False:
         ResultsADP,EstimateInitialState = PartAB.FiniteADP(MultiAttribute,fixedStepSize,generalization,
@@ -91,7 +91,7 @@ else:
     plt.title("Infinite Horizon: average rewards after n ADP iterations")
 plt.xlabel("ADP iterations")
 plt.ylabel("Average discounted rewards")
-labels = ['ADP setting #1']#add labels if you want to plot multiple runs
+labels = ['ADP setting #1'] #add labels if you want to plot multiple runs
 legend_elements = [Line2D([0], [0], color=color_list[i], lw=4, label=labels[i]) for i in range(0,len(labels))] 
 plt.legend(title = r"$\bf{Settings}$", handles = legend_elements, bbox_to_anchor=(1.4, 1))
 plt.show()
