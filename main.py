@@ -42,7 +42,7 @@ TimeHorizon = 20 #Horizon for finite ADP (T)
 infiniteADP = True #True = infinite ADP, False = finite ADP
 fixedStepSize = False  #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
 MultiAttribute = False #True = Multi attribute, False = single attribute
-# we plot all 3 policies in the same figure, so commented the following line out 
+# we plot all 3 policies in the same figure, so commented the line below out 
 # samplingStrategy = [0,1,0] #1 = Exploit, 2=Explore, 3=Epsilon-Greedy --- Turn the sampling strategy on by changing the location of the '1'
 doublePass = False #True = double pass, False = forward pass
 
