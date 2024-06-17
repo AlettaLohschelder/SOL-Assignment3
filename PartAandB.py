@@ -12,7 +12,9 @@ Aletta Lohschelder - s0000000
 #Import needed packages
 from math import trunc, sqrt, ceil
 import numpy as np
-# import random
+import matplotlib.pyplot as plt
+import heapq
+
 
 #Define Global variables
 AreaSize = 16 #area = 16x16
@@ -39,6 +41,29 @@ def SixHumpCamelBackFunctionADP(location):
 for i in range(0,AreaSize*AreaSize):
     LoadProbability[i] = SixHumpCamelBackFunctionADP(i)
 
+def PlotAllLocations():
+    x_values = []
+    y_values = []
+    
+    for i in range(0, AreaSize * AreaSize):
+        x = trunc(i/AreaSize)  
+        y = i % AreaSize 
+        
+        x_values.append(x)
+        y_values.append(y)
+    
+    for i, (x, y) in enumerate(zip(x_values, y_values)):
+        plt.annotate(str(i), (x, y), textcoords="offset points", xytext=(0,5), ha='center')
+    
+
+    # Plotting the points
+    plt.scatter(x_values, y_values, c='blue', marker='o')
+    plt.title('Plot of All Locations')
+    plt.xlabel('X Coordinate')
+    plt.ylabel('Y Coordinate')
+    plt.grid(True)
+    plt.show()
+
 def DistanceIToJ(i,j):
     #Returns the distance from i to j in miles
     x1 = trunc(i/AreaSize)
@@ -47,6 +72,19 @@ def DistanceIToJ(i,j):
     y2 = j % AreaSize
     
     return ((66 + (2/3)) * sqrt((x1-x2)**2) + (y1-y2)**2)
+
+def CreateDistanceMatrix():
+    # Initialize distance matrix with zeros
+    num_locations = AreaSize*AreaSize
+    dist_matrix = np.zeros((num_locations,num_locations))
+
+    # Fill the distance matrix
+    for i in range(num_locations):
+        for j in range(num_locations):
+            dist_matrix[i][j] = DistanceIToJ(i, j)
+
+    return dist_matrix
+
 
 def ImmediateRewards(decision, location, trailer, demand):
     #Returns the immediate rewards for a given location, decision and demand
@@ -213,6 +251,43 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
             
             #Update the previous post-decision state's estimate
             if generalization == True:
+                # we use the CreateDistanceMatrix() function we created to calculate the distance matrix between all locations
+                distance_matrix = CreateDistanceMatrix()
+
+                # implement the K-Nearest Neighbour technique with K = 8
+                # find the 8 closest locations to 'bestDecision'
+                distance_list = []  # initialize an empty list to store all distances from bestDecision
+
+                # Iterate through all locations
+                for i in range(AreaSize*AreaSize):
+                    if i != bestDecision:  # Exclude the location itself
+                        dist = distance_matrix[bestDecision][i]
+                        distance_list.append((dist, i))
+
+                closest_locations = heapq.nsmallest(8, distance_list)
+                
+                # choose the appropriate step size
+                if fixedStepSize == True: 
+                    #Fixed step size
+                    if n == 1:
+                        # For n=1 we always update completely, so step size = 1
+                        StepSize = 1
+                    else: 
+                        # Use the fixed step size
+                        StepSize = FixedStepSizeAlpha
+                else: 
+                    # Calculate the harmonic stepsize
+                    if n == 1:
+                        # For n=1 we always update completely, so step size = 1
+                        StepSize = 1
+                    else: 
+                        StepSize = max(25/(25+n-1),gamma)
+
+                # Update the 8 closest locations
+                for i in closest_locations:
+                    loc = i[1]
+                    PostDecisionStateValue[loc,day,trailer,0] = (1-StepSize)*PostDecisionStateValue[loc,day,trailer,0] + StepSize*DecisionmaxValue
+
                 """PART C (= B): Add code to update the post-decision estimates using 
                 some form of generalization across states"""
             
@@ -318,8 +393,28 @@ def FiniteADP(MultiAttribute, fixedStepSize,
                         if generalization == True: 
                             """PART C (=B): Add code to update the post-decision estimates 
                             using some form of generalization across states"""
-
-
+                            
+                            if fixedStepSize == True:
+                                """Add code to update the post-decision state estimates using a fixed stepsize"""
+                                # Determine the step size
+                                if n == 1:
+                                    # For n=1 we always update completely, so step size = 1
+                                    StepSize = 1
+                                else: 
+                                    # Use the fixed step size
+                                    StepSize = FixedStepSizeAlpha
+                                # Update PostDecisionStateValue using a fixed stepsize
+                                PostDecisionStateValue[location,day,trailer,0] = (1-StepSize)*PostDecisionStateValue[location,day,trailer,0] + StepSize*DecisionmaxValue
+                            else:
+                                """Add code to update the post-decision state estimates using a harmonic stepsize"""
+                                # Calculate the harmonic stepsize
+                                if n == 1:
+                                    # For n=1 we always update completely, so step size = 1
+                                    StepSize = 1
+                                else: 
+                                    StepSize = max(25/(25+n-1),gamma)
+                                # Update using a harmonic stepsize
+                                PostDecisionStateValue[location,day,trailer,0] = (1-StepSize)*PostDecisionStateValue[location,day,trailer,0] + StepSize*DecisionmaxValue
                         else:
                             if fixedStepSize == True:
                                 """Add code to update the post-decision state estimates using a fixed stepsize"""
@@ -381,6 +476,7 @@ def FiniteADP(MultiAttribute, fixedStepSize,
     PostDecisionStateValue = np.zeros(((AreaSize*AreaSize),1,1,1))
     return DiscountedRewards,EstimateInitialStates 
 
+# We did not make the Double pass finite ADP
 def DoublePassFiniteADP(MultiAttribute, fixedStepSize,
                         generalization, ADPiterations, CheckMthIter, Simiterations,
                         Replications, TimeHorizon, samplingStrategy,gamma):

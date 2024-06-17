@@ -34,12 +34,12 @@ starttime = time.time()
 # Define parameters
 ADPiterations = 250 #Number of ADP iterations (N)
 CheckMthIter = 10 #Simulate every Mth iteration (M)
-Simiterations = 1000 #Number of simulation iterations (O)
+Simiterations = 1000 # Number of simulation iterations (O)
 ADPreplications = 1 #Number of replications (K)
 
 TimeHorizon = 20 #Horizon for finite ADP (T)
 
-infiniteADP = False #True = infinite ADP, False = finite ADP
+infiniteADP = True #True = infinite ADP, False = finite ADP
 fixedStepSize = False  #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
 MultiAttribute = False #True = Multi attribute, False = single attribute
 # we plot all 3 policies in the same figure, so commented the following line out 
@@ -47,7 +47,7 @@ MultiAttribute = False #True = Multi attribute, False = single attribute
 doublePass = False #True = double pass, False = forward pass
 
 """PART B:"""
-generalization = False #True = generalization across states, False = no generalizaton. (whether you update all states (generalization) or not, when you update one value)
+generalization = True #True = generalization across states, False = no generalizaton. (whether you update all states (generalization) or not, when you update one value)
 """END PART B"""
 
 if infiniteADP == False:
