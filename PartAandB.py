@@ -337,9 +337,12 @@ def InfiniteADP(MultiAttribute, fixedStepSize,
                     demand = GenerateDemandVector(location, day, demand) 
                     
             if MultiAttribute == True:
-                        """Add code to take consider the multi-attribute problem with loadprobabilities and trailer types"""
-                
-            #After every Mth iteration, evaluate the current policy
+                """Add code to take consider the multi-attribute problem with loadprobabilities and trailer types"""
+                # The location has already been updated, now we also update the day and trailer such that we completed the multi-attribute 
+                day = (day + 1 ) % 7
+                trailer = (trailer + 1 ) % 3
+
+            # After every Mth iteration, evaluate the current policy 
             if n % CheckMthIter == 0:
                 DiscountedRewards[ceil(n/CheckMthIter)] += InfiniteEvaluationSimulation(Simiterations, MultiAttribute)
                 EstimateInitialStates[ceil(n/CheckMthIter)] += PostDecisionStateValue[0,0,0,0]
@@ -464,6 +467,8 @@ def FiniteADP(MultiAttribute, fixedStepSize,
                     
                     if MultiAttribute == True:
                         """Add code to take consider the multi-attribute problem with load probabilities and trailer types"""
+                        day = (day + 1 ) % 7
+                        trailer = (trailer + 1 ) % 3
 
             # STEP 4    
             #After every M iterations, evaluate the current policy

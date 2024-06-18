@@ -7,8 +7,6 @@ Also put your groupnumber in the filename
 Student and studentnumbers:
 Femke Geerts - s0000000
 Aletta Lohschelder - s0000000
-
-Note: Only an example implementation, you are allowed to make changes to all code
 """
 
 #Imports
@@ -34,14 +32,14 @@ starttime = time.time()
 # Define parameters
 ADPiterations = 250 #Number of ADP iterations (N)
 CheckMthIter = 10 #Simulate every Mth iteration (M)
-Simiterations = 1000 # Number of simulation iterations (O)
+Simiterations = 10 # Number of simulation iterations (O)           NOG GOED ZETTEN
 ADPreplications = 1 #Number of replications (K)
 
 TimeHorizon = 20 #Horizon for finite ADP (T)
 
-infiniteADP = True #True = infinite ADP, False = finite ADP
-fixedStepSize = False  #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
-MultiAttribute = False #True = Multi attribute, False = single attribute
+infiniteADP = False #True = infinite ADP, False = finite ADP
+fixedStepSize = True  #True = fixed stepsize alpha = 0.05, False = Harmonic stepsize
+MultiAttribute = True #True = Multi attribute, False = single attribute
 # we plot all 3 policies in the same figure, so commented the line below out 
 # samplingStrategy = [0,1,0] #1 = Exploit, 2=Explore, 3=Epsilon-Greedy --- Turn the sampling strategy on by changing the location of the '1'
 doublePass = False #True = double pass, False = forward pass
@@ -106,6 +104,11 @@ elif infiniteADP == True:
     ResultsADP3,EstimateInitialState3 = PartAB.InfiniteADP(MultiAttribute,fixedStepSize,generalization,
                                                 ADPiterations,CheckMthIter,Simiterations,
                                                 ADPreplications,samplingStrategy,gamma)
+
+# calculate and print the running time
+endtime = time.time()
+running_time = endtime - starttime
+print("The running time is:", running_time)
 
 
 #Plot result, you may change the plot style if you want
@@ -186,7 +189,3 @@ plt.legend(title=r"$\bf{Legend}$", handles=legend_elements, bbox_to_anchor=(1.05
 plt.tight_layout()  # Adjust layout to make room for the legend
 plt.show()
 
-# calculate and print the running time
-endtime = time.time()
-running_time = endtime - starttime
-print("The running time is:", running_time)
